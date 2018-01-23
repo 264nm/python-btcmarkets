@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import requests
 import time
 from GetConfig import GetConfig
 from APIClient import QueryAPI
-import json
 
 config = GetConfig()
 endpoint = "market/XRP/AUD/tick"
