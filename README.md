@@ -3,6 +3,12 @@ Python-BTCMarkets
 
 Python toolkit/scripts for accessing the btcmarkets.net RESTful API.
 
+Ticker
+-------
+
+Usage:
+
+./ticker.py <currency> <instrument> <--human|raw> (human default)
 
 Licensing
 ---------

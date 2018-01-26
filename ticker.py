@@ -5,15 +5,37 @@ import os
 from APIClient import QueryAPI
 from GetConfig import GetConfig
 
-# GENERIC TICKER. PASS IN CURRENCY1 / CURRENCY2
-# IN ORDER TO COMPARE
-
 config = GetConfig()
 
-def ticker(curr1,curr2):
-    endpoint = "market" + "/" + curr1 + "/" + curr2 + "/tick"
-    r = (QueryAPI(config.api_host, endpoint, "get"))
+class API_URI(object):
+    """
+    Basic class to build the API Endpoint as an object. Will probably
+    externalise into the API Client module as I can see it getting a bit
+    of reuse
+    """
+    def __init__(self, currency="BTC", instrument="AUD", tail="tick"):
+        self.currency = currency
+        self.instrument = instrument
+        self.tail = tail
+        self.endpoint = None
 
+    def get_currency(self):
+        return self.currency
+
+    def get_instrument(self):
+        return self.instrument
+
+    def get_tail(self):
+        return self.tail
+
+    def get_endpoint(self):
+        self.endpoint = "market" + "/" + self.currency + "/" + self.instrument + "/" + self.tail
+        return self.endpoint
+
+def ticker_human(r):
+    curr1 = r["currency"]
+    curr2 = r["instrument"]
+    endpoint = API_URI(curr1, curr2).get_endpoint()
     ask = r["bestAsk"]
     bid = r["bestBid"]
     last = r["lastPrice"]
@@ -42,16 +64,30 @@ def ticker(curr1,curr2):
 
     return p
 
+def ticker_raw(curr1, curr2):
+    endpoint = API_URI(curr1, curr2).get_endpoint()
+    r = (QueryAPI(config.api_host, endpoint, "get"))
+    return r
+
 @click.command()
 @click.argument(
     'tick', nargs=2, type=(click.Tuple([str, str]))
 )
 
-def get_tick_option(tick):
+@click.option(
+    '--human', '-h', 'formatting', flag_value='human', default=True,
+    help="Output the ticker results in a human readable format"
+)
+
+@click.option(
+    '--raw', '-r', 'formatting', flag_value='raw',
+    help="Output the ticker results as raw json response body"
+)
+
+
+def get_tick(tick, formatting):
     """
     This tool prints all the tickers available on BTCMarkets.net
-    Options Available:
-
     BTCMarkets.net at this stage only allows trading using AUD and BTC as currency.
 
     Options Available:
@@ -82,6 +118,7 @@ def get_tick_option(tick):
     coin=([valid_coin for valid_coin in valid_coins if coin == valid_coin])
     if not coin:
         click.echo('Error invalid coin. See --help for correct options')
+        exit()
     else:
         coin = str(coin).strip('[]')
 
@@ -94,8 +131,13 @@ def get_tick_option(tick):
     else:
          currency = str(currency).strip('[]')
 
-    res = ticker(curr1=tick[0], curr2=tick[1])
+    if formatting == 'human':
+        res = ticker_raw(curr1=tick[0], curr2=tick[1])
+        res = ticker_human(res)
+    if formatting == 'raw':
+        res = ticker_raw(curr1=tick[0], curr2=tick[1])
+
     click.echo(res)
 
 if __name__ == '__main__':
-    get_tick_option()
+    get_tick()
