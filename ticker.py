@@ -71,7 +71,7 @@ def ticker_raw(curr1, curr2):
 
 @click.command()
 @click.argument(
-    'tick', nargs=2, type=(click.Tuple([str, str]))
+    'tick', nargs=2, default=[None] * 2, type=(click.Tuple([str, str]))
 )
 
 @click.option(
