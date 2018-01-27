@@ -50,6 +50,6 @@ class BuildRequest:
 
 
 def QueryAPI(host, endpoint, req_type, request_headers=None, request_body=None):
-    query_api = BuildRequest(host, endpoint, req_type, request_headers=None,
-            request_body=None)
+    query_api = BuildRequest(host, endpoint, req_type, request_headers,
+            request_body)
     return query_api.get_results()

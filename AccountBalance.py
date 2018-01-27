@@ -8,67 +8,59 @@ from APIClient import QueryAPI
 from collections import OrderedDict
 from GetConfig import GetConfig
 
-# Define Global Vars
-config = GetConfig()
-uri = "/account/balance"
-endpoint = "account/balance"
+class BuildHeaders(GetConfig):
+    def __init__(self, endpoint):
+        super().__init__()
+        self.endpoint = endpoint
+        self.url = self.api_host + '/' + endpoint
+        self.headers = {}
 
-url = config.api_host + uri
-askey = config.api_key_secret.encode("utf-8")
-pkey = config.api_key_public.encode("utf-8")
-skey = base64.standard_b64decode(askey)
+    def get_endpoint(self):
+        return self.endpoint
 
-def build_headers(URL, PUBKEY, PRIVKEY):
-    """Build timestamp, format and encode everything,  and construct string to
-    sign with api key. Use HmacSHA512 algorithm in order to sign.
+    def get_url(self):
+        return self.url
 
-    Lastly build the headers to send... In order to ensure the correct order
-    of key value pairs in the JSON payload, build an ordered dictionary out
-    of a list of tuples.
-    """
-    # Build timestamp
-    tstamp = time.time()
-    ctstamp = int(tstamp * 1000)  # or int(tstamp * 1000) or round(tstamp * 1000)
-    sctstamp = str(ctstamp)
+    def get_headers(self):
+        pkey = self.api_key_public.encode("utf-8")
+        askey = self.api_key_secret.encode("utf-8")
+        skey = base64.standard_b64decode(askey)
 
-    # Optional timestamping method, not recommended as ticker results may
-    # be cached beyond the authentication window.
-    #
-    #urt = "/market/BTC/AUD/tick"
-    #turl = config.api_host + urt
-    #rt = requests.get(turl, verify=True)
-    #tstamp = r.json()["timestamp"]
-    #ctstamp = tstamp * 1000
+        # Build timestamp
+        tstamp = time.time()
+        ctstamp = int(tstamp * 1000)  # or int(tstamp * 1000) or round(tstamp * 1000)
+        sctstamp = str(ctstamp)
 
+        # Build and sign to construct body
+        sbody = '/' + endpoint + "\n" + sctstamp + "\n"
+        rbody = sbody.encode("utf-8")
+        rsig = hmac.new(skey, rbody, hashlib.sha512)
+        bsig = base64.standard_b64encode(rsig.digest()).decode("utf-8")
 
-    # Build and sign to construct body
-    sbody = uri + "\n" + sctstamp + "\n"
-    rbody = sbody.encode("utf-8")
-    rsig = hmac.new(skey, rbody, hashlib.sha512)
-    bsig = base64.standard_b64encode(rsig.digest()).decode("utf-8")
+        # Construct header list of key value pairs
+        headers_list = OrderedDict([("Accept", "application/json"),
+                      ("Accept-Charset", "UTF-8"),
+                      ("Content-Type", "application/json"),
+                      ("apikey", pkey),
+                      ("timestamp", sctstamp),
+                      ("signature", bsig)])
 
-    # Construct header list of key value pairs
-    headers_list = OrderedDict([("Accept", "application/json"),
-                     ("Accept-Charset", "UTF-8"),
-                     ("Content-Type", "application/json"),
-                     ("apikey", pkey),
-                     ("timestamp", sctstamp),
-                     ("signature", bsig)])
-    # Load list into dictionary
-    headers = dict(headers_list)
-
-    return headers
-
+        # Load list into dictionary
+        self.headers = dict(headers_list)
+        return self.headers
 
 def main():
-    """ Build the request body by invoking header function with config
-    params specified as global variables at top and return the balances for
-    AUD, BTC and LTC.
-
+    """ Build the request headers and pass to APIClient with below endpoint
     TODO: Add in functionality to pass options for the CLI.
     """
+    # Define Global Vars
+    config = GetConfig()
+    endpoint = "account/balance"
 
-    res = build_headers(url, pkey, skey)
+
+
+    x = BuildHeaders(endpoint)
+    res = x.get_headers()
     r = (QueryAPI(config.api_host, endpoint, "get", res))
     print (r)
 
