@@ -13,7 +13,7 @@ class API_URI(object):
     externalise into the API Client module as I can see it getting a bit
     of reuse
     """
-    def __init__(self, currency="BTC", instrument="AUD", tail="tick"):
+    def __init__(self, currency="AUD", instrument="BTC", tail="tick"):
         self.currency = currency
         self.instrument = instrument
         self.tail = tail
@@ -33,9 +33,9 @@ class API_URI(object):
         return self.endpoint
 
 def ticker_human(r):
-    curr1 = r["currency"]
-    curr2 = r["instrument"]
-    endpoint = API_URI(curr1, curr2).get_endpoint()
+    currency = r["currency"]
+    instrument = r["instrument"]
+    endpoint = API_URI(instrument, currency).get_endpoint()
     ask = r["bestAsk"]
     bid = r["bestBid"]
     last = r["lastPrice"]
@@ -45,7 +45,7 @@ def ticker_human(r):
 
 
     p = """
-        BTC Markets most recent BTC trade data:
+        BTC Markets most recent {7} trade data:
 
         Best ask price (buy at):   {0} {6}
         Best bid price (sell at):  {1} {6}
@@ -60,12 +60,13 @@ def ticker_human(r):
         Source:  {5}
         ------------------------------------------------------------
 
-        """.format(ask, bid, last, ltime, utime, config.api_host + '/' + endpoint, curr2)
+        """.format(ask, bid, last, ltime, utime, config.api_host + '/' +
+                endpoint, currency, instrument)
 
     return p
 
-def ticker_raw(curr1, curr2):
-    endpoint = API_URI(curr1, curr2).get_endpoint()
+def ticker_raw(instrument, currency):
+    endpoint = API_URI(instrument, currency).get_endpoint()
     r = (QueryAPI(config.api_host, endpoint, "get"))
     return r
 
@@ -110,7 +111,7 @@ def get_tick(tick, formatting):
         * BCH - Bitcoin Cash
     \b
     USAGE:
-        ./ticker.py <coin> <currency>
+        ./ticker.py <instrument> <currency>
     """
 
     valid_coins=['BTC', 'LTC', 'ETH', 'ETC', 'XRP', 'BCH']
@@ -132,10 +133,10 @@ def get_tick(tick, formatting):
          currency = str(currency).strip('[]')
 
     if formatting == 'human':
-        res = ticker_raw(curr1=tick[0], curr2=tick[1])
+        res = ticker_raw(instrument=tick[0], currency=tick[1])
         res = ticker_human(res)
     if formatting == 'raw':
-        res = ticker_raw(curr1=tick[0], curr2=tick[1])
+        res = ticker_raw(instrument=tick[0], currency=tick[1])
 
     click.echo(res)
 

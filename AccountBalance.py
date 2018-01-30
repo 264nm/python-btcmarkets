@@ -32,7 +32,7 @@ class BuildHeaders(GetConfig):
         sctstamp = str(ctstamp)
 
         # Build and sign to construct body
-        sbody = '/' + endpoint + "\n" + sctstamp + "\n"
+        sbody = '/' + self.endpoint + "\n" + sctstamp + "\n"
         rbody = sbody.encode("utf-8")
         rsig = hmac.new(skey, rbody, hashlib.sha512)
         bsig = base64.standard_b64encode(rsig.digest()).decode("utf-8")
@@ -56,8 +56,6 @@ def main():
     # Define Global Vars
     config = GetConfig()
     endpoint = "account/balance"
-
-
 
     x = BuildHeaders(endpoint)
     res = x.get_headers()
