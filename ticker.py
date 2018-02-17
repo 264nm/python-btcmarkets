@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import click
 import time
-import os
 from APIClient import QueryAPI
 from GetConfig import GetConfig
 
@@ -67,7 +66,7 @@ def ticker_human(r):
 
 def ticker_raw(instrument, currency):
     endpoint = API_URI(instrument, currency).get_endpoint()
-    r = (QueryAPI(config.api_host, endpoint, "get"))
+    r = (QueryAPI(endpoint, "get"))
     return r
 
 @click.command()
