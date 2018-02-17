@@ -13,6 +13,7 @@ from requests.exceptions import ConnectionError
 from collections import OrderedDict
 from GetConfig import GetConfig
 
+
 class BuildHeaders(GetConfig):
     """
     Argument: endpoint
@@ -33,9 +34,10 @@ class BuildHeaders(GetConfig):
          'Accept-Charset': 'UTF-8',
          'Content-Type': 'application/json',
          'apikey': b'9dda5ac5-e303-4e75-bc13-94115f489d23',
-         'signature': 'OGCrfO2jAOV53ja+kiKF2Dx0OLmRUE7Y60MLSvKvDM2CQxEshRG1x5jraxLk7wN3hujBtopWIN3xNVkt8uX42g==',
+         'signature': 'dsjklsdkflkslklsdfkklnlsdfnklsdklfklksdf',
          'timestamp': '1518830733142'}
     """
+
     def __init__(self, endpoint):
         super().__init__()
         self.endpoint = endpoint
@@ -55,7 +57,8 @@ class BuildHeaders(GetConfig):
 
         # Build timestamp
         tstamp = time.time()
-        ctstamp = int(tstamp * 1000)  # or int(tstamp * 1000) or round(tstamp * 1000)
+        # or int(tstamp * 1000) or round(tstamp * 1000)
+        ctstamp = int(tstamp * 1000)
         sctstamp = str(ctstamp)
 
         # Build and sign to construct body
@@ -66,17 +69,27 @@ class BuildHeaders(GetConfig):
 
         # Construct header list of key value pairs
         headers_list = OrderedDict([("Accept", "application/json"),
-                      ("Accept-Charset", "UTF-8"),
-                      ("Content-Type", "application/json"),
-                      ("apikey", pkey),
-                      ("timestamp", sctstamp),
-                      ("signature", bsig)])
+                                    ("Accept-Charset", "UTF-8"),
+                                    ("Content-Type", "application/json"),
+                                    ("apikey", pkey),
+                                    ("timestamp", sctstamp),
+                                    ("signature", bsig)])
 
         # Load list into dictionary
         self.headers = dict(headers_list)
         return self.headers
 
+
 class BuildRequest(BuildHeaders, GetConfig):
+    """
+    Performs HTTP request via requests module.
+    Access the headers from BuildHeaders via inheritence using Super().
+    Takes the following args:
+        api_endpoint
+        request_type i.e. get, put, post
+    If using put/post you must also pass a request_body
+    """
+
     def __init__(self, api_endpoint, request_type, request_body=None):
         super().__init__(api_endpoint)
         super().get_headers()
@@ -84,7 +97,6 @@ class BuildRequest(BuildHeaders, GetConfig):
         self.request_type = request_type
         self.request_body = request_body
         self.url = self.api_host + "/" + self.api_endpoint
-
 
     def get_api_endpoint(self):
         return self.api_endpoint
@@ -102,9 +114,11 @@ class BuildRequest(BuildHeaders, GetConfig):
         if self.request_type == "get":
             return requests.get(self.url, headers=self.headers)
         elif self.request_type == "put":
-            return requests.put(self.url, data=self.request_body)
+            return requests.put(self.url, headers=self.headers,
+                                data=self.request_body)
         elif self.request_type == "post":
-            return requests.post(self.url, data=self.request_body)
+            return requests.post(self.url, headers=self.headers,
+                                 data=self.request_body)
 
     def get_results(self):
         try:
@@ -113,4 +127,3 @@ class BuildRequest(BuildHeaders, GetConfig):
             print(err)
             request = "No response"
         return json.loads(request.text)
-
