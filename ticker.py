@@ -6,17 +6,25 @@ from GetConfig import GetConfig
 
 config = GetConfig()
 
-class API_URI(object):
+class MarketURI(object):
     """
-    Basic class to build the API Endpoint as an object. Will probably
-    externalise into the API Client module as I can see it getting a bit
-    of reuse
+    Basic class to build the API Endpoint for the "market" API. Requires the arguments
+    for the currency and the instrument.
+    'tail' is also given as an option but is currently defaulted to 'tick'.
+    To extend in future, other options are:
+        * tick
+        * orderbook
+        * trades
+    To use for the ticker (as originally intended) we simply do this:
+        x = MarketURI("ETH", "BTC") will return the value of ETH in BTC
+        endpoint = (x.get_endpoint())
+        >> market/ETH/BTC/tick
     """
-    def __init__(self, currency="AUD", instrument="BTC", tail="tick"):
+    def __init__(self, instrument="BTC", currency="AUD", tail="tick"):
         self.currency = currency
         self.instrument = instrument
         self.tail = tail
-        self.endpoint = None
+        self.head = "market"
 
     def get_currency(self):
         return self.currency
@@ -27,14 +35,17 @@ class API_URI(object):
     def get_tail(self):
         return self.tail
 
+    def get_head(self):
+        return self.head
+
     def get_endpoint(self):
-        self.endpoint = "market" + "/" + self.currency + "/" + self.instrument + "/" + self.tail
+        self.endpoint = self.head + "/" + self.instrument + "/" + self.currency + "/" + self.tail
         return self.endpoint
 
 def ticker_human(r):
     currency = r["currency"]
     instrument = r["instrument"]
-    endpoint = API_URI(instrument, currency).get_endpoint()
+    endpoint = MarketURI(instrument, currency).get_endpoint()
     ask = r["bestAsk"]
     bid = r["bestBid"]
     last = r["lastPrice"]
@@ -65,7 +76,7 @@ def ticker_human(r):
     return p
 
 def ticker_raw(instrument, currency):
-    endpoint = API_URI(instrument, currency).get_endpoint()
+    endpoint = MarketURI(instrument, currency).get_endpoint()
     query_api = BuildRequest(endpoint, "get",
             request_body=None)
     r = query_api.get_results()

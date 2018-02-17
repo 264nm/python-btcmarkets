@@ -1,33 +1,60 @@
 #!/usr/bin/env python3
-
-import requests
-import time
-import json
 import yaml
-import os
+
+# GetConfig.py
+
+# Class to load in necessary configuration params. Structured in a way
+# that could be used to store config for multiple sites but defaulted
+# to btc_markets key for this repo in case we wanted to interact with
+# other APIs.
+
+# TODO: Create retreival of config vars by other mechanisms such as
+#       environment vars and create an order of precidence.
 
 class OpenConfig(object):
+    """
+    Open configuration file from yaml structure and return as a dictionary.
+    The path configured as the default is config.yml in the working directory.
+
+    As mentioned earlier, multiple configuration sets can be stored in here
+    seperated by a descriptor key which in this case is defaulted as
+    "btc_markets".
+
+    To over-ride these defaults we would obviously instantiate the object like
+    x = OpenConfig("different-config.yml", "binance")
+
+    """
     def __init__(self, config_file="config.yml", site="btc_markets"):
         self.config_file = config_file
         self.site = site
         self.config_dict = {}
 
-    def getConfigFile(self):
+    def get_config_file(self):
         return self.config_file
 
-    def getSite(self):
+    def get_site(self):
         return self.site
 
-    def getConfigValues(self):
+    def get_config_values(self):
         with open (self.config_file) as f:
             self.config_dict = yaml.load(f)
         self.config_dict = self.config_dict[self.site]
         return self.config_dict
 
 class GetConfig(OpenConfig):
-    def __init__(self):
-         super().__init__()
-         super().getConfigValues()
+    """
+    Using a property and setter approach, this class inherits OpenConfig and
+    calls get_config_values method via super() in order to access the
+    configuration values as a dictionary and declare them individually.
+    Config vars can be used by classes inheriting i.e. NewClass(GetConfig):
+        ...and access them via self. i.e. self.api_username
+    To interact with the object directly, the standard pattern is
+        config = GetConfig()
+        print (config.api_username)
+    """
+    def __init__(self, config_file="config.yml", site="btc_markets"):
+         super().__init__(config_file="config.yml", site="btc_markets")
+         super().get_config_values()
          self._api_host = None
          self._api_username = None
          self._api_key_public = None
@@ -71,10 +98,23 @@ class GetConfig(OpenConfig):
 
 
 def main():
+    """
+    Example of how to use the GetConfig class.
 
+    Remember we have the potential to store multiple configuration sets.
+    If we had another credential set for "binance" we could do something like
+    this:
+
+        btc_markets = GetConfig("other-config.yml", "btc_markets")
+        binance = GetConfig("other-config.yml", "binance")
+        print ("btcmarkets.net username: " + btc_markets.api_username)
+        print ("binance.com username: " + binance.api_username)
+
+    """
     config = GetConfig()
     print (config.api_host, config.api_username, config.api_key_public, config.api_key_secret)
     return config
+
 
 if __name__ == '__main__':
     main()
