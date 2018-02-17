@@ -3,7 +3,12 @@
 # Module-ish import for doing the actual API calls.
 # Doesn't do anything fancy and interact via requests library
 
-import json, requests, time, hashlib, hmac, base64
+import json
+import requests
+import time
+import hashlib
+import hmac
+import base64
 from requests.exceptions import ConnectionError
 from collections import OrderedDict
 from GetConfig import GetConfig
@@ -81,16 +86,16 @@ class BuildRequest(BuildHeaders, GetConfig):
         self.url = self.api_host + "/" + self.api_endpoint
 
 
-    def getAPIEndpoint(self):
+    def get_api_endpoint(self):
         return self.api_endpoint
 
-    def getRequestURL(self, host, api_endpoint):
+    def get_request_url(self, host, api_endpoint):
         return self.url
 
-    def getRequestType(self):
+    def get_request_type(self):
         return self.request_type
 
-    def getRequestBody(self):
+    def get_request_body(self):
         return self.request_body
 
     def results(self):
@@ -109,8 +114,3 @@ class BuildRequest(BuildHeaders, GetConfig):
             request = "No response"
         return json.loads(request.text)
 
-
-def QueryAPI(endpoint, req_type, request_body=None):
-    query_api = BuildRequest(endpoint, req_type,
-            request_body)
-    return query_api.get_results()

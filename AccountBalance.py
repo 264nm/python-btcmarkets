@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from APIClient import QueryAPI
+from APIClient import BuildRequest
 
 def main():
     """ Build the request headers and pass to APIClient with below endpoint
@@ -8,7 +8,9 @@ def main():
     """
     endpoint = "account/balance"
 
-    r = (QueryAPI(endpoint, "get"))
+    query_api = BuildRequest(endpoint, "get",
+            request_body=None)
+    r = query_api.get_results()
     print (r)
 
 if __name__ == "__main__":
