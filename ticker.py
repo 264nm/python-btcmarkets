@@ -3,7 +3,7 @@ import click
 import time
 from APIClient import BuildRequest
 from GetConfig import GetConfig
-
+from typing import Dict, List, Tuple, Any, Optional, Union
 config = GetConfig()
 
 class MarketURI(object):
@@ -20,38 +20,39 @@ class MarketURI(object):
         endpoint = (x.get_endpoint())
         >> market/ETH/BTC/tick
     """
-    def __init__(self, instrument="BTC", currency="AUD", tail="tick"):
+    def __init__(self, instrument: str="BTC", currency: str="AUD", tail:
+            str="tick") -> None:
         self.currency = currency
         self.instrument = instrument
         self.tail = tail
         self.head = "market"
 
-    def get_currency(self):
+    def get_currency(self) -> str:
         return self.currency
 
-    def get_instrument(self):
+    def get_instrument(self) -> str:
         return self.instrument
 
-    def get_tail(self):
+    def get_tail(self) -> str:
         return self.tail
 
-    def get_head(self):
+    def get_head(self) -> str:
         return self.head
 
-    def get_endpoint(self):
+    def get_endpoint(self) -> str:
         self.endpoint = self.head + "/" + self.instrument + "/" + self.currency + "/" + self.tail
         return self.endpoint
 
-def ticker_human(r):
-    currency = r["currency"]
-    instrument = r["instrument"]
-    endpoint = MarketURI(instrument, currency).get_endpoint()
-    ask = r["bestAsk"]
-    bid = r["bestBid"]
-    last = r["lastPrice"]
-    tstamp = r["timestamp"]
-    ltime = time.ctime(tstamp)
-    utime = time.asctime(time.gmtime(tstamp))
+def ticker_human(r: Dict) -> str:
+    currency: str = r["currency"]
+    instrument: str = r["instrument"]
+    endpoint: str = MarketURI(instrument, currency).get_endpoint()
+    ask: float = r["bestAsk"]
+    bid: float = r["bestBid"]
+    last: float = r["lastPrice"]
+    tstamp: Optional[float] = r["timestamp"]
+    ltime: str = time.ctime(tstamp)
+    utime: str = time.asctime(time.gmtime(tstamp))
 
 
     p = """
@@ -75,7 +76,7 @@ def ticker_human(r):
 
     return p
 
-def ticker_raw(instrument, currency):
+def ticker_raw(instrument: str, currency: str) -> Union[str, Dict[str, Any]]:
     endpoint = MarketURI(instrument, currency).get_endpoint()
     query_api = BuildRequest(endpoint, "get",
             request_body=None)
@@ -126,7 +127,7 @@ def get_tick(tick, formatting):
         ./ticker.py <instrument> <currency>
     """
 
-    valid_coins=['BTC', 'LTC', 'ETH', 'ETC', 'XRP', 'BCH']
+    valid_coins: List[str] = ['BTC', 'LTC', 'ETH', 'ETC', 'XRP', 'BCH']
     coin=tick[0]
     coin=([valid_coin for valid_coin in valid_coins if coin == valid_coin])
     if not coin:
@@ -135,8 +136,8 @@ def get_tick(tick, formatting):
     else:
         coin = str(coin).strip('[]')
 
-    valid_currencies=['BTC', 'AUD']
-    currency=tick[1]
+    valid_currencies: List[str] = ['BTC', 'AUD']
+    currency: str = tick[1]
     currency=([valid_currency for valid_currency in valid_currencies if currency == valid_currency])
     if not currency:
          click.echo('Error - invalid currency. See --help for correct options')

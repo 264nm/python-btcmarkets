@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import yaml
-
+from typing import Dict
 # GetConfig.py
 
 # Class to load in necessary configuration params. Structured in a way
@@ -24,21 +24,21 @@ class OpenConfig(object):
     x = OpenConfig("different-config.yml", "binance")
 
     """
-    def __init__(self, config_file="config.yml", site="btc_markets"):
+    def __init__(self, config_file: str ="config.yml", site: str="btc_markets") -> None:
         self.config_file = config_file
         self.site = site
-        self.config_dict = {}
+        self.config_dict: Dict[str, str]
 
-    def get_config_file(self):
+    def get_config_file(self) -> str:
         return self.config_file
 
-    def get_site(self):
+    def get_site(self) -> str:
         return self.site
 
-    def get_config_values(self):
+    def get_config_values(self) -> Dict[str, str]:
         with open (self.config_file) as f:
-            self.config_dict = yaml.load(f)
-        self.config_dict = self.config_dict[self.site]
+            config_dict = yaml.load(f)
+            self.config_dict = config_dict[self.site]
         return self.config_dict
 
 class GetConfig(OpenConfig):
@@ -52,16 +52,16 @@ class GetConfig(OpenConfig):
         config = GetConfig()
         print (config.api_username)
     """
-    def __init__(self, config_file="config.yml", site="btc_markets"):
+    def __init__(self, config_file: str="config.yml", site: str="btc_markets") -> None:
          super().__init__(config_file="config.yml", site="btc_markets")
          super().get_config_values()
-         self._api_host = None
-         self._api_username = None
-         self._api_key_public = None
-         self._api_key_secret = None
+         self._api_host: str
+         self._api_username: str
+         self._api_key_public: str
+         self._api_key_secret: str
 
     @property
-    def api_host(self):
+    def api_host(self) -> str:
         self._api_host = self.config_dict['api_host']
         return self._api_host
 
@@ -70,7 +70,7 @@ class GetConfig(OpenConfig):
         self._api_host = api_host
 
     @property
-    def api_username(self):
+    def api_username(self) -> str:
         self._api_username = self.config_dict['api_username']
         return self._api_username
 
@@ -79,7 +79,7 @@ class GetConfig(OpenConfig):
         self._api_username = api_username
 
     @property
-    def api_key_public(self):
+    def api_key_public(self) -> str:
         self._api_key_public = self.config_dict['api_key_public']
         return self._api_key_public
 
@@ -88,7 +88,7 @@ class GetConfig(OpenConfig):
         self._api_key_public = api_key_public
 
     @property
-    def api_key_secret(self):
+    def api_key_secret(self) -> str:
         self._api_key_secret = self.config_dict['api_key_secret']
         return self._api_key_secret
 
